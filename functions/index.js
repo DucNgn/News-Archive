@@ -7,7 +7,7 @@ let browserPromise = puppeteer.launch({
 });
 
 exports.helloWorld = functions.https.onRequest((req, res) => {
- res .send("Hello");
+ res.send("Hello");
  
 });
 
@@ -24,9 +24,3 @@ exports.updateCNNScreenShot = async (req, res) => {
     res.setHeader('Content-type', 'image/png');
     res.send(image);
 };
-
-exports.updateInTime = functions.pubsub
-    .topic('Update news')
-    .onPublish(async message => {
-
-    });
