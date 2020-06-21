@@ -1,8 +1,9 @@
 const functions = require('firebase-functions');
 const puppeteer = require('puppeteer');
 
+// Test cloud function
 exports.helloWorld = functions.https.onRequest((req, res) => {
- res.send("Hello");
+    res.send("Hello");
 });
 
 // Test cloud function
@@ -12,19 +13,16 @@ exports.randomNumber = functions.https.onRequest((request, response) => {
     response.send(number.toString());
 });
 
-exports.updateCNNScreenShot = functions.https.onRequest ((req, res) => {
+exports.updateCNNHeadlines = functions.https.onRequest((req, res) => {
     let headlines;
     try {
-        headlines = getCNNImg();
-    } catch(err) {
+        headlines, screenshot = getHeadlines();
+    } catch (err) {
         console.log("Error when scraping");
     }
-    console.log("Got the headlines");
-    console.log(headlines.toString())
-   // res.send(headlines.toString());
+    console.log("Headlines are being scraped");
+    res.send(headlines);
 });
-
-
 
 let browserPromise = puppeteer.launch({
     args: [
@@ -32,21 +30,31 @@ let browserPromise = puppeteer.launch({
     ]
 });
 
-const getCNNImg = async (req, res) => {
+const getHeadlines = async (req, res) => {
     const url = 'https://www.cnn.com/';
     const browser = await browserPromise;
-    console.info(browser);
     const context = await browser.createIncognitoBrowserContext();
     const page = await context.newPage();
 
-    await page.goto(url, {waitUntil: 'networkidle2'});
+    await page.goto(url, { waitUntil: 'networkidle2' });
 
-   /* const image = await page.screenshot();*/
-   /* const headlines = await page.evaluate(() => document.querySelector('cd__headline-text').innerText); */
-    const element = await page.$("cd__headline-text");
-    const headlines = await page.evaluate(element => element.textContent, element);
+    const screenshot = await page.screenshot();
 
+    selectorTags = ['#homepage1-zone-1', '#homepage2-zone-1', '#homepage3-zone-1', '#homepage4-zone-1', '#homepage5-zone-1'];
+    selectorTags = selectorTags.map(e => e.concat(" > div > div > div > ul > li > article > div > div > h3 > a > span.cd__headline-text"));
+
+    const headlines = await page.evaluate((selectors) => {
+        let headlinesTotal = [];
+        for (let i = 0; i < selectors.length; i++) {
+            const nodeList = document.querySelectorAll(selectors[i]);
+            const headlinesNode = [...nodeList];
+            headlinesTotal = headlinesTotal.concat(headlinesNode.map(each => each.textContent.trim()));
+        }       
+        return headlinesTotal;
+    }, selectorTags);
+    
     await context.close();
     await browser.close();
-    return headlines;
+    console.log(headlines);
+    return headlines, screenshot;
 };
