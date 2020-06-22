@@ -74,14 +74,19 @@ exports.scheduledFunction = functions.pubsub.schedule('*/15 * * * *').onRun((con
     
     // getCNNData();
 
-    // addCNNData();
+    headlines = [
+        "This is newly added Headline 1",
+        "This is newly added Headline 2"
+    ];
+
+    headlines.forEach(value => addCNNData(value));
 });
 
 // Firestore Implementation
 
 // Get data
-// CHECKME: This function can be used for front-end for retrieving data from Firestore
 function getCNNData() {
+    // CHECKME: This function can be used for front-end for retrieving data from 'foxnews' collection in Firestore
     db.collection('cnn').get()
         // eslint-disable-next-line promise/always-return
         .then((snapshot) => {
@@ -94,7 +99,37 @@ function getCNNData() {
         .catch(error => console.log('Error getting documents from Firestore', error));
 }
 
-// Add data
-// function addCNNData() {
+function getFoxNewsData() {
+    // CHECKME: This function can be used for front-end for retrieving data from 'foxnews' collection in Firestore
+    db.collection('foxnews').get()
+        // eslint-disable-next-line promise/always-return
+        .then((snapshot) => {
+            snapshot.docs.forEach(doc => {
+                console.log(doc.id); 
+                console.log(doc.data().headline);
+                console.log(doc.data().timestamp);
+            })
+        })
+        .catch(error => console.log('Error getting documents from Firestore', error));
+}
 
-// }
+// Add data
+function addCNNData(headline) {
+    // This function is for add new documents into 'cnn' collections in Firestore 
+    const data = {
+        headline: headline,
+        timestamp: Date.now()
+    };
+
+    db.collection('cnn').add(data);
+}
+
+function addFoxNewsData(headline) {
+    // This function is for add new documents into 'foxnews' collections in Firestore 
+    const data = {
+        headline: headline,
+        timestamp: Date.now()
+    };
+
+    db.collection('foxnews').add(data);
+}
