@@ -70,16 +70,26 @@ const getHeadlines = async (req, res) => {
 
 // Schedule cloud function (PubSub)
 exports.scheduledFunction = functions.pubsub.schedule('*/15 * * * *').onRun((context) => {
-    console.log('This will be run every 15 minutes!');
+    console.log('This function will be run every 15 minutes!');
     
     // getCNNData();
+
+    let headlines, screenshot;
+
+    // Uncomment for web scrapping
+    // try {
+    //     headlines, screenshot = getHeadlines();
+    // } catch (err) {
+    //     console.log("Error when scrapping");
+    // }
+    // console.log("Headlines are being scraped");
 
     headlines = [
         "This is newly added Headline 1",
         "This is newly added Headline 2"
     ];
 
-    headlines.forEach(value => addCNNData(value));
+    headlines.forEach(value => addCNNData(value));  // Adding data to Firestore
 });
 
 // Firestore Implementation
@@ -115,20 +125,20 @@ function getFoxNewsData() {
 
 // Add data
 function addCNNData(headline) {
-    // This function is for add new documents into 'cnn' collections in Firestore 
+    // CHECKME: This function is for adding new documents into 'cnn' collections in Firestore 
     const data = {
         headline: headline,
-        timestamp: Date.now()
+        timestamp: admin.firestore.Timestamp.fromDate(new Date())
     };
 
     db.collection('cnn').add(data);
 }
 
 function addFoxNewsData(headline) {
-    // This function is for add new documents into 'foxnews' collections in Firestore 
+    // CHECKME: This function is for adding new documents into 'foxnews' collections in Firestore 
     const data = {
         headline: headline,
-        timestamp: Date.now()
+        timestamp: admin.firestore.Timestamp.fromDate(new Date())
     };
 
     db.collection('foxnews').add(data);
