@@ -1,6 +1,14 @@
 const functions = require('firebase-functions');
 const puppeteer = require('puppeteer');
 
+// Initialize for Firestore
+const admin = require('firebase-admin');
+admin.initializeApp();
+
+let db = admin.firestore();
+
+
+
 // Test cloud function
 exports.helloWorld = functions.https.onRequest((req, res) => {
     res.send("Hello");
@@ -63,4 +71,30 @@ const getHeadlines = async (req, res) => {
 // Schedule cloud function (PubSub)
 exports.scheduledFunction = functions.pubsub.schedule('*/15 * * * *').onRun((context) => {
     console.log('This will be run every 15 minutes!');
+    
+    // getCNNData();
+
+    // addCNNData();
 });
+
+// Firestore Implementation
+
+// Get data
+// CHECKME: This function can be used for front-end for retrieving data from Firestore
+function getCNNData() {
+    db.collection('cnn').get()
+        // eslint-disable-next-line promise/always-return
+        .then((snapshot) => {
+            snapshot.docs.forEach(doc => {
+                console.log(doc.id); 
+                console.log(doc.data().headline);
+                console.log(doc.data().timestamp);
+            })
+        })
+        .catch(error => console.log('Error getting documents from Firestore', error));
+}
+
+// Add data
+// function addCNNData() {
+
+// }
