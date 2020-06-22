@@ -28,7 +28,7 @@ let browserPromise = puppeteer.launch({
     args: [
         '--no-sandbox',
     ]
-});
+}).catch(err => console.log("Error with launching puppeteer browser: " + err));  // Handle rejected promise
 
 const getHeadlines = async (req, res) => {
     const url = 'https://www.cnn.com/';
@@ -58,3 +58,9 @@ const getHeadlines = async (req, res) => {
     console.log(headlines);
     return headlines, screenshot;
 };
+
+
+// Schedule cloud function (PubSub)
+exports.scheduledFunction = functions.pubsub.schedule('*/15 * * * *').onRun((context) => {
+    console.log('This will be run every 15 minutes!');
+});
