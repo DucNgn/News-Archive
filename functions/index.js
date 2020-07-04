@@ -7,7 +7,7 @@ admin.initializeApp();
 
 let db = admin.firestore();
 
-
+// ================================================================
 
 // Test cloud function
 exports.helloWorld = functions.https.onRequest((req, res) => {
@@ -67,16 +67,18 @@ const getHeadlines = async (req, res) => {
     return headlines, screenshot;
 };
 
+// ================================================================
 
-// Schedule cloud function (PubSub)
+// Schedule cloud function (PubSub) - FOR INITING SCRAPPING HEADLINES AND SCREENSHOT EVERY 15MINS
 exports.scheduledFunction = functions.pubsub.schedule('*/15 * * * *').onRun((context) => {
     console.log('This function will be run every 15 minutes!');
     
+    // TRYME: Uncomment for to get data from cnn collection in Firestore
     // getCNNData();
-
+    
     let headlines, screenshot;
-
-    // Uncomment for web scrapping
+    
+    // TRYME: Uncomment to add data with websrapping
     // try {
     //     headlines, screenshot = getHeadlines();
     // } catch (err) {
@@ -84,6 +86,7 @@ exports.scheduledFunction = functions.pubsub.schedule('*/15 * * * *').onRun((con
     // }
     // console.log("Headlines are being scraped");
 
+    // TRYME: Uncomment the variable below to test the scheduled function
     headlines = [
         "This is newly added Headline 1",
         "This is newly added Headline 2"
@@ -92,9 +95,11 @@ exports.scheduledFunction = functions.pubsub.schedule('*/15 * * * *').onRun((con
     headlines.forEach(value => addCNNData(value));  // Adding data to Firestore
 });
 
-// Firestore Implementation
+// ================================================================
 
-// Get data
+// Firestore Implementation - ONLY USED FOR STORING HEADLINES
+
+// Get data - USED FOR FRONT END DEV
 function getCNNData() {
     // CHECKME: This function can be used for front-end for retrieving data from 'foxnews' collection in Firestore
     db.collection('cnn').get()
@@ -123,7 +128,7 @@ function getFoxNewsData() {
         .catch(error => console.log('Error getting documents from Firestore', error));
 }
 
-// Add data
+// Add data - USED FOR SCHEDULED JOB
 function addCNNData(headline) {
     // CHECKME: This function is for adding new documents into 'cnn' collections in Firestore 
     const data = {
@@ -143,3 +148,7 @@ function addFoxNewsData(headline) {
 
     db.collection('foxnews').add(data);
 }
+
+// ================================================================
+
+// Cloud Storage Implementation - ONLY USED FOR STORING SCREENSHOTS
