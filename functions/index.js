@@ -1,25 +1,44 @@
-const functions = require('firebase-functions');
-const puppeteer = require('puppeteer');
+const firebase = require('firebase/app');
+require('firebase/functions');
+require('firebase/firestore');
+require('firebase/storage');
+ 
+// Set the configuration for your app
+const firebaseConfig = {
+    apiKey: "AIzaSyB6MmX9-y2Qrw3Y7x_ADWAgOkbBNHTA1ac",
+    authDomain: "newsarchive.firebaseapp.com",
+    databaseURL: "https://newsarchive.firebaseio.com",
+    projectId: "newsarchive",
+    storageBucket: "newsarchive.appspot.com",
+    messagingSenderId: "595990768689",
+    appId: "1:595990768689:web:150fa4c437006d8969b910",
+    measurementId: "G-KXDVTXCSN4"
+};
 
-// Initialize for Firestore
-const admin = require('firebase-admin');
-admin.initializeApp();
+const app = firebase.initializeApp(firebaseConfig);
 
-let db = admin.firestore();
+const functions = app.functions();
+const db = app.firestore();
+const storage = app.storage();
+
+// ===============
+
+// const firebase = require('firebase-app');
+
+// const functions = require('firebase-functions');
+
+
+// // Initialize for Firestore
+// const admin = require('firebase-admin');
+// admin.initializeApp();
+
+// let db = admin.firestore();
 
 // ================================================================
 
-// Test cloud function
-exports.helloWorld = functions.https.onRequest((req, res) => {
-    res.send("Hello");
-});
+// Puppteer Implementation
 
-// Test cloud function
-exports.randomNumber = functions.https.onRequest((request, response) => {
-    const number = Math.round(Math.random() * 100);
-    console.log(number)
-    response.send(number.toString());
-});
+const puppeteer = require('puppeteer');
 
 exports.updateCNNHeadlines = functions.https.onRequest((req, res) => {
     let headlines;
@@ -74,7 +93,7 @@ exports.scheduledFunction = functions.pubsub.schedule('*/15 * * * *').onRun((con
     console.log('This function will be run every 15 minutes!');
     
     // TRYME: Uncomment for to get data from cnn collection in Firestore
-    // getCNNData();
+    // getHeadlineData();
     
     let headlines, screenshot;
     
@@ -92,7 +111,7 @@ exports.scheduledFunction = functions.pubsub.schedule('*/15 * * * *').onRun((con
         "This is newly added Headline 2"
     ];
 
-    headlines.forEach(value => addCNNData(value));  // Adding data to Firestore
+    headlines.forEach(value => addHeadlineData(value, 'cnn'));  // Adding data to Firestore
 });
 
 // ================================================================
@@ -100,9 +119,9 @@ exports.scheduledFunction = functions.pubsub.schedule('*/15 * * * *').onRun((con
 // Firestore Implementation - ONLY USED FOR STORING HEADLINES
 
 // Get data - USED FOR FRONT END DEV
-function getCNNData() {
+function getHeadlineData(collection) {
     // CHECKME: This function can be used for front-end for retrieving data from 'foxnews' collection in Firestore
-    db.collection('cnn').get()
+    db.collection(colelction).get()
         // eslint-disable-next-line promise/always-return
         .then((snapshot) => {
             snapshot.docs.forEach(doc => {
@@ -114,41 +133,40 @@ function getCNNData() {
         .catch(error => console.log('Error getting documents from Firestore', error));
 }
 
-function getFoxNewsData() {
-    // CHECKME: This function can be used for front-end for retrieving data from 'foxnews' collection in Firestore
-    db.collection('foxnews').get()
-        // eslint-disable-next-line promise/always-return
-        .then((snapshot) => {
-            snapshot.docs.forEach(doc => {
-                console.log(doc.id); 
-                console.log(doc.data().headline);
-                console.log(doc.data().timestamp);
-            })
-        })
-        .catch(error => console.log('Error getting documents from Firestore', error));
-}
 
 // Add data - USED FOR SCHEDULED JOB
-function addCNNData(headline) {
+function addHeadlineData(headline, collection) {
     // CHECKME: This function is for adding new documents into 'cnn' collections in Firestore 
     const data = {
         headline: headline,
         timestamp: admin.firestore.Timestamp.fromDate(new Date())
     };
 
-    db.collection('cnn').add(data);
-}
-
-function addFoxNewsData(headline) {
-    // CHECKME: This function is for adding new documents into 'foxnews' collections in Firestore 
-    const data = {
-        headline: headline,
-        timestamp: admin.firestore.Timestamp.fromDate(new Date())
-    };
-
-    db.collection('foxnews').add(data);
+    db.collection(collection).add(data);
 }
 
 // ================================================================
 
 // Cloud Storage Implementation - ONLY USED FOR STORING SCREENSHOTS
+
+var fs = require('fs');
+
+function uploadCNNScreenshots() {
+    // Try upload a screenshot
+    fs.readFile('screenshots/google.png', (err, data) => {
+        if (err) throw err;
+
+        // Storage ref to the screenshot
+        let cnnRef = storage.ref('screenshots/cnn');
+        
+        // Upload file
+        cnnRef.child(file.name).put(data)
+        .then( () => {
+            return console.log("Successfully uploaded");
+        })
+        .catch(error => {
+            console.log(error.message);
+        });
+
+    });
+}

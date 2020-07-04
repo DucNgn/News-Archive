@@ -13,8 +13,7 @@
     "node": "10"
   },
   "dependencies": {
-    "firebase-admin": "^8.12.1",
-    "firebase-functions": "^3.6.1",
+    "firebase": "^7.15.5",
     "puppeteer": "^4.0.0"
   },
   "devDependencies": {

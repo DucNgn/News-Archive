@@ -67,3 +67,5 @@ node_modules/
 *.DS_Store
 *.VS_Code
 *.log
+
+functions/screenshots
